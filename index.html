@@ -1,0 +1,81 @@
+<html>
+
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <link rel="stylesheet" href="index.css" />
+</head>
+
+<body>
+    <div class="content">
+        <section class="menu">
+            <select>
+                <option>A</option>
+                <option>B</option>
+            </select>
+            <textarea></textarea>
+
+            <label>
+                <span>Angle</span>
+                <input id="angle" value="60" />
+            </label>
+            <label>
+                <span>Length</span>
+                <input id="length" value="6" />
+            </label>
+            <label>
+                <span>Depth</span>
+                <input id="depth" value="6" />
+            </label>
+            <button id="drawBtn">Rysuj</button>
+            <button id="clear">Czyść</button>
+        </section>
+        <main id="canvas-wrapper">
+            <canvas id="canvas"></canvas>
+        </main>
+    </div>
+    <script type="module">
+
+        import init, { add, create_points } from './pkg/l_systems_rs.js';
+
+        var wrapper = document.getElementById("canvas-wrapper")
+        const canvas = document.getElementById("canvas")
+        const ctx = canvas.getContext("2d")
+        console.log(wrapper)
+        ctx.canvas.width = wrapper.clientWidth;
+        ctx.canvas.height = wrapper.clientHeight;
+
+        function draw_points(points) {
+            points = [
+                { x: -4, y: 3.9 },
+                { x: 4.9, y: 8 },
+                { x: 8, y: 8 },
+                { x: 8, y: 16 },
+            ]
+            ctx.beginPath()
+            ctx.moveTo(0, 0);
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                ctx.lineTo(point.x * 2, point.y * 2)
+                console.log(point)
+            }
+            ctx.stroke()
+        }
+
+        async function run() {
+            await init();
+            const draw_btn = document.getElementById("drawBtn")
+            draw_btn.addEventListener("click", () => {
+                let output = create_points();
+
+                let parsed = JSON.parse(output)
+                console.log(parsed)
+
+                draw_points(parsed)
+            })
+        }
+
+        run();
+    </script>
+</body>
+
+</html>

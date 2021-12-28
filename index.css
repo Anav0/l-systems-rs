@@ -1,0 +1,52 @@
+input,
+select,
+textarea,
+canvas,
+button {
+  padding: 0.3rem 1rem;
+  border: solid 2px black;
+}
+
+button {
+  background: none;
+  border: solid 2px black;
+  cursor: pointer;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.menu {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+label {
+  display: grid;
+}
+
+label span {
+  padding-bottom: 5px;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  max-width: 1024px;
+  max-height: 720px;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  grid-gap: 2rem;
+}
