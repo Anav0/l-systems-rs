@@ -20,15 +20,13 @@ pub fn add(a: u32, b: u32) -> u32 {
 }
 
 #[wasm_bindgen]
-pub fn create_points() -> String {
-    let input = String::from("F: F+F-F\nF");
-    // let input = String::from("A: AB,B: A\nA");
-    // let input = String::from("1: 11,0: 1[0]0\n0");
-    let max_recursion: u8 = 3;
+pub fn create_points(input: String) -> String {
+    println!("{}", input);
+    let in_params: Parameters = serde_json::from_str(&input).unwrap();
+    println!("{:?}", in_params);
+    let mut out_params: Parameters;
 
-    let line_length: f32 = 8.0;
-
-    let lines: Vec<&str> = input.lines().collect();
+    let lines: Vec<&str> = in_params.system.lines().collect();
 
     let rules_str = lines[0];
 
@@ -42,14 +40,6 @@ pub fn create_points() -> String {
         rules.insert(split[0].chars().collect::<Vec<char>>()[0], split[1]);
     }
 
-    let angle: f32 = (PI * 90.0) / 180.0;
-
-    let params = Parameters {
-        angle,
-        recursion: max_recursion,
-        line_length,
-    };
-
     let starting_point = Point {
         x: 0.0,
         y: 0.0,
@@ -59,18 +49,24 @@ pub fn create_points() -> String {
     let mut state: VecDeque<State> = VecDeque::new();
 
     let current_state: State = State {
-        angle,
+        angle: (PI * in_params.angle) / 180.0,
         point: starting_point,
     };
 
     let mut to_draw: Vec<Point> = vec![];
 
+    out_params = Parameters {
+        angle: current_state.angle,
+        line_length: in_params.line_length,
+        recursion: in_params.recursion,
+        system: String::from(lines[1]),
+    };
+
     fill_points_to_draw(
-        String::from(lines[1]),
         &rules,
         &mut state,
         current_state,
-        &params,
+        &mut out_params,
         &mut to_draw,
         1,
     );

@@ -12,8 +12,7 @@
                 <option>A</option>
                 <option>B</option>
             </select>
-            <textarea></textarea>
-
+            <textarea id="system"></textarea>
             <label>
                 <span>Angle</span>
                 <input id="angle" value="60" />
@@ -27,7 +26,7 @@
                 <input id="depth" value="6" />
             </label>
             <button id="drawBtn">Rysuj</button>
-            <button id="clear">Czyść</button>
+            <button id="clearBtn">Czyść</button>
         </section>
         <main id="canvas-wrapper">
             <canvas id="canvas"></canvas>
@@ -40,6 +39,12 @@
         var wrapper = document.getElementById("canvas-wrapper")
         const canvas = document.getElementById("canvas")
         const ctx = canvas.getContext("2d")
+        const systemInput = document.getElementById("system")
+        const angleInput = document.getElementById("angle")
+        const lengthInput = document.getElementById("length")
+        const depthInput = document.getElementById("depth")
+
+
         console.log(wrapper)
         ctx.canvas.width = wrapper.clientWidth;
         ctx.canvas.height = wrapper.clientHeight;
@@ -63,9 +68,29 @@
 
         async function run() {
             await init();
+
             const draw_btn = document.getElementById("drawBtn")
+            const clear_btn = document.getElementById("clearBtn")
+
+            clear_btn.addEventListener("click", () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            })
             draw_btn.addEventListener("click", () => {
-                let output = create_points();
+                let angle = angleInput.value.trim();
+                let depth = depthInput.value.trim();
+                let length = lengthInput.value.trim();
+                let system = systemInput.value.trim();
+
+                let arg = {
+                    line_length: length,
+                    recursion: depth,
+                    angle: angle,
+                    system: system
+                }
+
+                console.log(JSON.stringify(arg))
+
+                let output = create_points(JSON.stringify(arg));
 
                 let parsed = JSON.parse(output)
                 console.log(parsed)

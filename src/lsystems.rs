@@ -3,7 +3,7 @@ use std::{
     f32::consts::PI,
 };
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug, Clone, Copy)]
 pub struct Point {
@@ -18,18 +18,19 @@ pub struct State {
     pub angle: f32,
 }
 
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Parameters {
     pub angle: f32,
     pub line_length: f32,
     pub recursion: u8,
+    pub system: String,
 }
 
 pub fn fill_points_to_draw<'a>(
-    text: String,
     rules: &HashMap<char, &'a str>,
     states: &'a mut VecDeque<State>,
     mut state: State,
-    params: &Parameters,
+    params: &mut Parameters,
     to_draw: &mut Vec<Point>,
     depth: u8,
 ) {
@@ -39,7 +40,7 @@ pub fn fill_points_to_draw<'a>(
 
     let mut i = 0;
     let mut combination: String = String::from("");
-    for char in text.chars() {
+    for char in params.system.chars() {
         match char {
             '-' => {
                 state.angle -= (PI * 45.0) / 180.0;
@@ -78,13 +79,6 @@ pub fn fill_points_to_draw<'a>(
         i += 1;
     }
     println!("{} {:?}", depth + 1, combination);
-    fill_points_to_draw(
-        combination,
-        rules,
-        states,
-        state,
-        params,
-        to_draw,
-        depth + 1,
-    );
+    params.system = combination;
+    fill_points_to_draw(rules, states, state, params, to_draw, depth + 1);
 }
