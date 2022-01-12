@@ -13,18 +13,17 @@
             <textarea id="system"></textarea>
             <label>
                 <span>Angle</span>
-                <input id="angle" value="90" />
+                <input type="number" id="angle" value="90" />
             </label>
             <label>
                 <span>Length</span>
-                <input id="length" value="20" />
+                <input type="number" id="length" value="20" />
             </label>
             <label>
                 <span>Depth</span>
-                <input id="depth" value="6" />
+                <input type="number" id="depth" value="6" />
             </label>
-            <button id="drawBtn">Rysuj</button>
-            <button id="clearBtn">Czyść</button>
+            <button id="drawBtn">Draw</button>
         </section>
         <main id="canvas-wrapper">
             <canvas id="canvas"></canvas>
@@ -36,7 +35,7 @@
                 key: "Hex",
                 value: "F: F+F\nF",
                 angle: 60,
-                depth: 6,
+                depth: 8,
                 length: 40,
             },
             {
@@ -73,22 +72,7 @@
         const lengthInput = document.getElementById("length")
         const depthInput = document.getElementById("depth")
         const predefinedSelect = document.getElementById("predefined")
-
-        for (let element of predefined) {
-            let newOption = document.createElement("option");
-            newOption.value = element.key;
-            newOption.text = element.key;
-            newOption.key = element.key;
-            predefinedSelect.appendChild(newOption)
-        }
-
-        assign_parameters(predefined[0])
-
-        predefinedSelect.addEventListener("change", e => {
-            let matching = predefined.find(x => x.key == e.target.value);
-            assign_parameters(matching)
-            clear_and_draw()
-        })
+        const drawBtn = document.getElementById("drawBtn")
 
         ctx.canvas.width = wrapper.clientWidth;
         ctx.canvas.height = wrapper.clientHeight;
@@ -111,30 +95,77 @@
             ctx.stroke()
         }
 
-        function clear_and_draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let angle = angleInput.value.trim();
-            let depth = depthInput.value.trim();
-            let length = lengthInput.value.trim();
-            let system = systemInput.value.trim();
-            let center_point = { x: canvas.width / 2, y: canvas.height / 2, z: 0 };
-
-            let arg = {
-                line_length: +length,
-                recursion: +depth,
-                angle: +angle,
-                system,
-                center_point,
-            }
-
-            let output = create_points(JSON.stringify(arg));
-
-            draw_points(output)
+        function block_input() {
+            predefinedSelect.disabled = true;
+            drawBtn.disabled = true;
+            drawBtn.innerHTML = "Loading..."
         }
+
+        function allow_input() {
+            predefinedSelect.disabled = false;
+            drawBtn.disabled = false;
+            drawBtn.innerHTML = "Draw"
+        }
+
+        function fetch_points() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    let angle = angleInput.value.trim();
+                    let depth = depthInput.value.trim();
+                    let length = lengthInput.value.trim();
+                    let system = systemInput.value.trim();
+                    let center_point = { x: canvas.width / 2, y: canvas.height / 2, z: 0 };
+
+                    let arg = {
+                        line_length: +length,
+                        recursion: +depth,
+                        angle: +angle,
+                        system,
+                        center_point,
+                    }
+
+                    let output = create_points(JSON.stringify(arg));
+
+                    resolve(output)
+                })
+            });
+        }
+
+        predefinedSelect.addEventListener("change", async e => {
+            let matching = predefined.find(x => x.key == e.target.value);
+            assign_parameters(matching)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            block_input()
+            let points = await fetch_points()
+            draw_points(points)
+            allow_input()
+        })
+
+        drawBtn.addEventListener("click", async () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            block_input()
+            let points = await fetch_points()
+            draw_points(points)
+            allow_input()
+        })
 
         async function run() {
             await init();
-            clear_and_draw()
+
+            block_input()
+
+            for (let element of predefined) {
+                let newOption = document.createElement("option");
+                newOption.value = element.key;
+                newOption.text = element.key;
+                newOption.key = element.key;
+                predefinedSelect.appendChild(newOption)
+            }
+
+            assign_parameters(predefined[0])
+            let points = await fetch_points()
+            draw_points(points)
+            allow_input()
         }
 
         run();

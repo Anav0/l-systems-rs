@@ -46,7 +46,7 @@ pub fn fill_points_to_draw<'a>(
         return;
     }
 
-    log!("{}", params.system);
+    // log!("{}", params.system);
     let mut combination: String = String::from("");
     for char in params.system.chars() {
         match char {
