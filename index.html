@@ -8,18 +8,16 @@
 <body>
     <div class="content">
         <section class="menu">
-            <select>
-                <option>A</option>
-                <option>B</option>
+            <select id="predefined">
             </select>
             <textarea id="system"></textarea>
             <label>
                 <span>Angle</span>
-                <input id="angle" value="60" />
+                <input id="angle" value="90" />
             </label>
             <label>
                 <span>Length</span>
-                <input id="length" value="6" />
+                <input id="length" value="20" />
             </label>
             <label>
                 <span>Depth</span>
@@ -33,8 +31,39 @@
         </main>
     </div>
     <script type="module">
+        const predefined = [
+            {
+                key: "Hex",
+                value: "F: F+F\nF",
+                angle: 60,
+                depth: 6,
+                length: 40,
+            },
+            {
+                key: "Koch flake",
+                value: "F: F+F--F+F\nF--F--F",
+                angle: 60,
+                depth: 5,
+                length: 4,
+            },
+            {
+                key: "Square",
+                value: "F:\nF+F+F+F",
+                angle: 90,
+                depth: 1,
+                length: 200,
+            },
 
-        import init, { add, create_points } from './pkg/l_systems_rs.js';
+            {
+                key: "Plant",
+                value: "F: FF+[+F-F-F]-[-F+F+F]\nF",
+                angle: 22.5,
+                depth: 5,
+                length: 9,
+            }
+        ]
+
+        import init, { create_points } from './pkg/l_systems_rs.js';
 
         var wrapper = document.getElementById("canvas-wrapper")
         const canvas = document.getElementById("canvas")
@@ -43,60 +72,69 @@
         const angleInput = document.getElementById("angle")
         const lengthInput = document.getElementById("length")
         const depthInput = document.getElementById("depth")
+        const predefinedSelect = document.getElementById("predefined")
 
+        for (let element of predefined) {
+            let newOption = document.createElement("option");
+            newOption.value = element.key;
+            newOption.text = element.key;
+            newOption.key = element.key;
+            predefinedSelect.appendChild(newOption)
+        }
 
-        console.log(wrapper)
+        assign_parameters(predefined[0])
+
+        predefinedSelect.addEventListener("change", e => {
+            let matching = predefined.find(x => x.key == e.target.value);
+            assign_parameters(matching)
+            clear_and_draw()
+        })
+
         ctx.canvas.width = wrapper.clientWidth;
         ctx.canvas.height = wrapper.clientHeight;
 
+        function assign_parameters(selected) {
+            systemInput.value = selected.value;
+            angleInput.value = selected.angle;
+            lengthInput.value = selected.length
+            depthInput.value = selected.depth
+        }
+
         function draw_points(points) {
-            points = [
-                { x: -4, y: 3.9 },
-                { x: 4.9, y: 8 },
-                { x: 8, y: 8 },
-                { x: 8, y: 16 },
-            ]
             ctx.beginPath()
-            ctx.moveTo(0, 0);
             for (let i = 0; i < points.length; i++) {
-                const point = points[i];
-                ctx.lineTo(point.x * 2, point.y * 2)
-                console.log(point)
+                const start = points[i][0];
+                const end = points[i][1];
+                ctx.moveTo(start.x, start.y)
+                ctx.lineTo(end.x, end.y)
             }
             ctx.stroke()
         }
 
+        function clear_and_draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let angle = angleInput.value.trim();
+            let depth = depthInput.value.trim();
+            let length = lengthInput.value.trim();
+            let system = systemInput.value.trim();
+            let center_point = { x: canvas.width / 2, y: canvas.height / 2, z: 0 };
+
+            let arg = {
+                line_length: +length,
+                recursion: +depth,
+                angle: +angle,
+                system,
+                center_point,
+            }
+
+            let output = create_points(JSON.stringify(arg));
+
+            draw_points(output)
+        }
+
         async function run() {
             await init();
-
-            const draw_btn = document.getElementById("drawBtn")
-            const clear_btn = document.getElementById("clearBtn")
-
-            clear_btn.addEventListener("click", () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            })
-            draw_btn.addEventListener("click", () => {
-                let angle = angleInput.value.trim();
-                let depth = depthInput.value.trim();
-                let length = lengthInput.value.trim();
-                let system = systemInput.value.trim();
-
-                let arg = {
-                    line_length: length,
-                    recursion: depth,
-                    angle: angle,
-                    system: system
-                }
-
-                console.log(JSON.stringify(arg))
-
-                let output = create_points(JSON.stringify(arg));
-
-                let parsed = JSON.parse(output)
-                console.log(parsed)
-
-                draw_points(parsed)
-            })
+            clear_and_draw()
         }
 
         run();

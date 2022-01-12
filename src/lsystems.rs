@@ -1,29 +1,37 @@
 use std::{
     collections::{HashMap, VecDeque},
-    f32::consts::PI,
+    f64::consts::PI,
 };
+
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct Point {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct State {
     pub point: Point,
-    pub angle: f32,
+    pub angle: f64,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Parameters {
-    pub angle: f32,
-    pub line_length: f32,
+    pub angle: f64,
+    pub line_length: f64,
     pub recursion: u8,
     pub system: String,
+    pub center_point: Point,
 }
 
 pub fn fill_points_to_draw<'a>(
@@ -31,31 +39,27 @@ pub fn fill_points_to_draw<'a>(
     states: &'a mut VecDeque<State>,
     mut state: State,
     params: &mut Parameters,
-    to_draw: &mut Vec<Point>,
+    to_draw: &mut Vec<[Point; 2]>,
     depth: u8,
 ) {
     if depth > params.recursion {
         return;
     }
 
-    let mut i = 0;
+    log!("{}", params.system);
     let mut combination: String = String::from("");
     for char in params.system.chars() {
         match char {
             '-' => {
-                state.angle -= (PI * 45.0) / 180.0;
-                combination += "-";
+                state.angle -= (PI * params.angle) / 180.0;
+                combination += "-"
             }
             '+' => {
-                state.angle += (PI * 45.0) / 180.0;
-                combination += "+";
+                state.angle += (PI * params.angle) / 180.0;
+                combination += "+"
             }
             '[' => {
-                let mut state = State {
-                    angle: params.angle,
-                    point: state.point,
-                };
-                states.push_front(state);
+                states.push_front(state.clone());
                 combination += "[";
             }
             ']' => {
@@ -65,20 +69,16 @@ pub fn fill_points_to_draw<'a>(
             }
             _ => {
                 if rules.contains_key(&char) {
-                    let rule = *rules.get(&char).unwrap();
-
-                    combination += rule;
-
-                    state.point.y += params.angle.sin() * params.line_length;
-                    state.point.x += params.angle.cos() * params.line_length;
-
-                    to_draw.push(state.point);
+                    combination += *rules.get(&char).unwrap();
                 }
+                let prev_point = state.point.clone();
+                state.point.y += state.angle.sin() * params.line_length;
+                state.point.x += state.angle.cos() * params.line_length;
+
+                to_draw.push([prev_point, state.point.clone()]);
             }
         }
-        i += 1;
     }
-    println!("{} {:?}", depth + 1, combination);
     params.system = combination;
     fill_points_to_draw(rules, states, state, params, to_draw, depth + 1);
 }

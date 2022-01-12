@@ -9,8 +9,12 @@ button {
 
 button {
   background: none;
-  border: solid 2px black;
+  border: dashed 2px black;
   cursor: pointer;
+}
+
+button:hover {
+  border-style: solid;
 }
 
 body {
