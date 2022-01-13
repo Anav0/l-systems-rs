@@ -3,14 +3,21 @@
 <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
     <link rel="stylesheet" href="index.css" />
+    <script type="module" src="index.js"></script>
 </head>
 
 <body>
     <div class="content">
         <section class="menu">
-            <select id="predefined">
-            </select>
-            <textarea id="system"></textarea>
+            <label>
+                <span>Predefined systems</span>
+                <select id="predefined">
+                </select>
+            </label>
+            <label>
+                <span>System</span>
+                <textarea id="system"></textarea>
+            </label>
             <label>
                 <span>Angle</span>
                 <input type="number" id="angle" value="90" />
@@ -29,147 +36,6 @@
             <canvas id="canvas"></canvas>
         </main>
     </div>
-    <script type="module">
-        const predefined = [
-            {
-                key: "Hex",
-                value: "F: F+F\nF",
-                angle: 60,
-                depth: 8,
-                length: 40,
-            },
-            {
-                key: "Koch flake",
-                value: "F: F+F--F+F\nF--F--F",
-                angle: 60,
-                depth: 5,
-                length: 4,
-            },
-            {
-                key: "Square",
-                value: "F:\nF+F+F+F",
-                angle: 90,
-                depth: 1,
-                length: 200,
-            },
-
-            {
-                key: "Plant",
-                value: "F: FF+[+F-F-F]-[-F+F+F]\nF",
-                angle: 22.5,
-                depth: 5,
-                length: 9,
-            }
-        ]
-
-        import init, { create_points } from './pkg/l_systems_rs.js';
-
-        var wrapper = document.getElementById("canvas-wrapper")
-        const canvas = document.getElementById("canvas")
-        const ctx = canvas.getContext("2d")
-        const systemInput = document.getElementById("system")
-        const angleInput = document.getElementById("angle")
-        const lengthInput = document.getElementById("length")
-        const depthInput = document.getElementById("depth")
-        const predefinedSelect = document.getElementById("predefined")
-        const drawBtn = document.getElementById("drawBtn")
-
-        ctx.canvas.width = wrapper.clientWidth;
-        ctx.canvas.height = wrapper.clientHeight;
-
-        function assign_parameters(selected) {
-            systemInput.value = selected.value;
-            angleInput.value = selected.angle;
-            lengthInput.value = selected.length
-            depthInput.value = selected.depth
-        }
-
-        function draw_points(points) {
-            ctx.beginPath()
-            for (let i = 0; i < points.length; i++) {
-                const start = points[i][0];
-                const end = points[i][1];
-                ctx.moveTo(start.x, start.y)
-                ctx.lineTo(end.x, end.y)
-            }
-            ctx.stroke()
-        }
-
-        function block_input() {
-            predefinedSelect.disabled = true;
-            drawBtn.disabled = true;
-            drawBtn.innerHTML = "Loading..."
-        }
-
-        function allow_input() {
-            predefinedSelect.disabled = false;
-            drawBtn.disabled = false;
-            drawBtn.innerHTML = "Draw"
-        }
-
-        function fetch_points() {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    let angle = angleInput.value.trim();
-                    let depth = depthInput.value.trim();
-                    let length = lengthInput.value.trim();
-                    let system = systemInput.value.trim();
-                    let center_point = { x: canvas.width / 2, y: canvas.height / 2, z: 0 };
-
-                    let arg = {
-                        line_length: +length,
-                        recursion: +depth,
-                        angle: +angle,
-                        system,
-                        center_point,
-                    }
-
-                    let output = create_points(JSON.stringify(arg));
-
-                    resolve(output)
-                })
-            });
-        }
-
-        predefinedSelect.addEventListener("change", async e => {
-            let matching = predefined.find(x => x.key == e.target.value);
-            assign_parameters(matching)
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            block_input()
-            let points = await fetch_points()
-            draw_points(points)
-            allow_input()
-        })
-
-        drawBtn.addEventListener("click", async () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            block_input()
-            let points = await fetch_points()
-            draw_points(points)
-            allow_input()
-        })
-
-        async function run() {
-            await init();
-
-            block_input()
-
-            for (let element of predefined) {
-                let newOption = document.createElement("option");
-                newOption.value = element.key;
-                newOption.text = element.key;
-                newOption.key = element.key;
-                predefinedSelect.appendChild(newOption)
-            }
-
-            assign_parameters(predefined[0])
-            let points = await fetch_points()
-            draw_points(points)
-            allow_input()
-        }
-
-        run();
-    </script>
 </body>
 
 </html>

@@ -1,0 +1,46 @@
+export default [
+  {
+    key: "Plant",
+    value: "F: FF+[+F-F-F]-[-F+F+F]\nF",
+    angle: 22.5,
+    depth: 5,
+    length: 9,
+    center: { x: 50, y: 50, z: 0 },
+  },
+  {
+    key: "Hex",
+    value: "F: F+F\nF",
+    angle: 60,
+    depth: 8,
+    length: 40,
+  },
+  {
+    key: "Koch flake",
+    value: "F: F+F--F+F\nF--F--F",
+    angle: 60,
+    depth: 5,
+    length: 4,
+  },
+  {
+    key: "Square",
+    value: "F:\nF+F+F+F",
+    angle: 90,
+    depth: 1,
+    length: 200,
+  },
+  // {
+  //   key: "Peano",
+  //   value: "X: XFYFX+F+YFXFY-F-XFYFX,Y: YFXFY-F-XFYFX+F+YFXFY\nX",
+  //   angle: 90,
+  //   depth: 5,
+  //   length: 4,
+  //   center: { x: 50, y: 120, z: 0 },
+  // },
+  {
+    key: "Islands",
+    value: "F: F-f+FF-F-FF-Ff-FF+f-FF+F+FF+Ff+FFF,f: ffffff\nF-F-F-F",
+    angle: 90,
+    depth: 3,
+    length: 5,
+  },
+];
